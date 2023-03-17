@@ -1,7 +1,11 @@
 package httpserver.itf.impl;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
 
 import httpserver.itf.HttpRequest;
 import httpserver.itf.HttpResponse;
@@ -17,7 +21,36 @@ public class HttpStaticRequest extends HttpRequest {
 	}
 	
 	public void process(HttpResponse resp) throws Exception {
-	// TO COMPLETE
-	}
+		
+	
+		
+	    String filename = m_hs.getFolder() + getRessname();
+		if (filename.equals("FILES/")) {
+			filename += DEFAULT_FILE;
+		}
+		
+		
+		File requestFile = new File(filename);
+		
+		if (!requestFile.exists()) {
+			resp.setReplyError(404, "file doesn't exist");
+	        return;
+	    }
+
+	    if (!requestFile.isFile()) {
+	    	resp.setReplyError(404, "file doesn't exist");
+	        return;
+	    }
+		
+			resp.setReplyOk();
+			resp.setContentLength((int)requestFile.length());
+			resp.setContentType(getContentType(filename));
+			
+			
+			PrintStream ps = resp.beginBody();
+			FileInputStream fis = new FileInputStream(requestFile);
+			ps.writeBytes(fis.readAllBytes());
+			fis.close();
+		}
 
 }
