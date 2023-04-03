@@ -1,6 +1,7 @@
 package httpserver.itf;
 
 import java.io.IOException;
+import java.util.HashMap;
 
 import httpserver.itf.impl.HttpServer;
 
@@ -18,7 +19,7 @@ public abstract class HttpRequest {
 		m_method = method;
 		m_ressname = ressname;
 	}
-
+	
 	/*
 	 * Return the HTTP method ("GET", "POST", "PUT", ..) of the current request
 	 */

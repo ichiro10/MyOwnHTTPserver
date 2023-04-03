@@ -19,4 +19,7 @@ public class HelloRicmlet implements httpserver.itf.HttpRicmlet{
 		ps.println("</H4></BODY></HTML>");
 		ps.println();
 	}
+	
+
+
 }

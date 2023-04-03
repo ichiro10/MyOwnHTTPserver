@@ -7,11 +7,14 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.StringTokenizer;
 
 import httpserver.itf.HttpRequest;
 import httpserver.itf.HttpResponse;
 import httpserver.itf.HttpRicmlet;
+import httpserver.itf.HttpRicmletRequest;
 
 
 /**
@@ -29,7 +32,8 @@ public class HttpServer {
 	private int m_port;
 	private File m_folder;  // default folder for accessing static resources (files)
 	private ServerSocket m_ssoc;
-
+	public Hashtable<String, HttpRicmlet> instance;	
+	
 	protected HttpServer(int port, String folderName) {
 		m_port = port;
 		if (!folderName.endsWith(File.separator)) 
@@ -42,7 +46,8 @@ public class HttpServer {
 			System.out.println("HttpServer Exception:" + e );
 			System.exit(1);
 		}
-	}
+		instance = new Hashtable<String, HttpRicmlet>();	
+		}
 	
 	public File getFolder() {
 		return m_folder;
@@ -53,7 +58,13 @@ public class HttpServer {
 	public HttpRicmlet getInstance(String clsname)
 			throws InstantiationException, IllegalAccessException, ClassNotFoundException, MalformedURLException, 
 			IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
-		throw new Error("No Support for Ricmlets");
+		HttpRicmlet inst = this.instance.get(clsname);
+		if(inst == null) {
+			Class<?> c = Class.forName(clsname);
+			inst = ((HttpRicmlet) c.getDeclaredConstructor().newInstance());
+			this.instance.put(clsname, inst);
+		}
+		return inst;
 	}
 
 
@@ -70,18 +81,29 @@ public class HttpServer {
 		String method = parseline.nextToken().toUpperCase(); 
 		String ressname = parseline.nextToken();
 		if (method.equals("GET")) {
-			request = new HttpStaticRequest(this, method, ressname);
-		} else 
+			if (ressname.contains("FILES"))
+				request = new HttpStaticRequest(this, method, ressname);
+			if (ressname.contains("ricmlets")) {
+				request = new HttpRicmletRequestImpl(this, method, ressname, br);
+				
+			}
+		} else {
 			request = new UnknownRequest(this, method, ressname);
+		}
 		return request;
 	}
+
 
 
 	/*
 	 * Returns an HttpResponse object associated to the given HttpRequest object
 	 */
 	public HttpResponse getResponse(HttpRequest req, PrintStream ps) {
-		return new HttpResponseImpl(this, req, ps);
+		if (req instanceof HttpRicmletRequestImpl) {
+			return new HttpRicmletResponseImpl(this, req, ps);
+		}else { 
+			return new HttpResponseImpl(this, req, ps);
+		}
 	}
 
 
@@ -115,4 +137,3 @@ public class HttpServer {
 	}
 
 }
-
