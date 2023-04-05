@@ -5,6 +5,7 @@ import java.io.PrintStream;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 import httpserver.itf.HttpRequest;
@@ -15,12 +16,14 @@ public class HttpRicmletResponseImpl implements HttpRicmletResponse {
 	protected HttpServer m_hs;
 	protected PrintStream m_ps;
 	protected HttpRequest m_req;
-	protected String cookiesHeader;
+	
+    Map<String, String> cookies;
 	
 	protected HttpRicmletResponseImpl(HttpServer hs, HttpRequest req, PrintStream ps) {
 		m_hs = hs;
 		m_req = req;
 		m_ps = ps;
+		this.cookies = new HashMap<>();
 	}
 	
 	@Override
@@ -28,8 +31,8 @@ public class HttpRicmletResponseImpl implements HttpRicmletResponse {
 		// TODO Auto-generated method stub
 		m_ps.println("HTTP/1.0 200 OK");
 		m_ps.println("Date: " + new Date());
-		m_ps.println(cookiesHeader);
 		m_ps.println("Server: ricm-http 1.0");
+		cookies.forEach((key, val) -> m_ps.println("Set-Cookie: " + key + "=" + val));
 	}
 
 	@Override
@@ -66,7 +69,7 @@ public class HttpRicmletResponseImpl implements HttpRicmletResponse {
 
 	@Override
 	public void setCookie(String name, String value) {
-		m_ps.println("Set-Cookie: " + name + "=" + value);
+		this.cookies.put(name, value);
 	}
 
 }

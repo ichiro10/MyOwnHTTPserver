@@ -6,6 +6,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 import httpserver.itf.HttpResponse;
@@ -17,58 +18,32 @@ import httpserver.itf.HttpSession;
 public class HttpRicmletRequestImpl extends HttpRicmletRequest {
 
 	Hashtable<String, String> args = new Hashtable<String, String>();
-	Hashtable<String, String> cookies = new Hashtable<String, String>();
-
+    Map<String, String> cookies;
+	public BufferedReader br;
 		
 		
 	public HttpRicmletRequestImpl(HttpServer hs, String method, String ressname, BufferedReader br) throws IOException {
 		super(hs, method, ressname, br);
 		// TODO Auto-generated constructor stub
-		/**String line = br.readLine();
-		while(!(line.isEmpty())){
-			if(line.startsWith("Cookie: ")) {
-				int index = line.indexOf(";");
-				String subCoockies = line.substring(8);
-				if(index == -1) {
-					String tmpCoockies[] = subCoockies.split("=");
-					cookies.put(tmpCoockies[0], tmpCoockies[1]);
-				}else{
-					String tmpCoockies[] = subCoockies.split("; ");
-					int i = 0;
-					do {
-						String tmpCoockies2[] = tmpCoockies[i].split("=");
-						cookies.put(tmpCoockies2[0], tmpCoockies2[1]);
-						
-						i++;
+  		 String line = br.readLine();
 
-					}while(i < tmpCoockies.length);
+	     cookies = new HashMap<>();
+	     while(line != null && !line.equals("")) {
+	    	 
+	            if(line.startsWith("Cookie:")) {
+	                String extractCookies = line.substring("Cookie: ".length());
+	                String[] cookies = extractCookies.split(";");
 
-					}
-				}
-			line = br.readLine();
-			}
-			**/
+	                for(String cookie : cookies) {
+	                    String[] keyval = cookie.split("=");
+	                    this.cookies.put(keyval[0].trim(), keyval[1]);
+	                }
+	            }
+	            line = br.readLine();
+	        }
 		}
 
 		
-	
-		
-	public void parse_args(String arg_string) {
-		if (arg_string == null) return;
-		String[] pairs = arg_string.split("&");
-		for (String couple : pairs) {
-			int i = couple.indexOf("=");
-			try {
-				String key = URLDecoder.decode(couple.substring(0,i), "UTF-8");
-				String value = URLDecoder.decode(couple.substring(i+1,couple.length()-1), "UTF-8");
-				args.put(key, value);
-			} catch (UnsupportedEncodingException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
-		}
-	}
 		
 
 	@Override
@@ -78,7 +53,7 @@ public class HttpRicmletRequestImpl extends HttpRicmletRequest {
 	}
 
 	@Override
-	public String getArg(String name) {
+	public String getArg(String name) {		
 		// TODO Auto-generated method stub
 		int index = this.m_ressname.indexOf("?");
 		String line = this.m_ressname.substring(index + 1);
@@ -92,10 +67,11 @@ public class HttpRicmletRequestImpl extends HttpRicmletRequest {
 		}
 		return "";
 	}
+	
 
 	@Override
 	public String getCookie(String name) {
-		return cookies.get(name);
+		return this.cookies.get(name);
 	}
 
 	@Override
