@@ -20,6 +20,7 @@ public class HttpRicmletRequestImpl extends HttpRicmletRequest {
 	Hashtable<String, String> args = new Hashtable<String, String>();
     Map<String, String> cookies;
 	public BufferedReader br;
+    HttpSession hs = null;
 		
 		
 	public HttpRicmletRequestImpl(HttpServer hs, String method, String ressname, BufferedReader br) throws IOException {
@@ -49,7 +50,19 @@ public class HttpRicmletRequestImpl extends HttpRicmletRequest {
 	@Override
 	public HttpSession getSession() {
 		// TODO Auto-generated method stub
-		return null;
+		 String id_S = this.cookies.get("id_S");
+	        if(id_S == null) {
+	            this.cookies.put("id_S", String.valueOf(m_hs.id_S));
+	            Session s = (Session) m_hs.addSession();
+	            m_hs.id_S++;
+	            return s;
+	            
+	            
+	        } else {
+	        	
+	            hs = m_hs.getSession(Integer.parseInt(id_S));
+	            return hs;
+	        }
 	}
 
 	@Override
@@ -73,6 +86,7 @@ public class HttpRicmletRequestImpl extends HttpRicmletRequest {
 	public String getCookie(String name) {
 		return this.cookies.get(name);
 	}
+	
 
 	@Override
 	public void process(HttpResponse resp) throws Exception {

@@ -15,6 +15,7 @@ import httpserver.itf.HttpRequest;
 import httpserver.itf.HttpResponse;
 import httpserver.itf.HttpRicmlet;
 import httpserver.itf.HttpRicmletRequest;
+import httpserver.itf.HttpSession;
 
 
 /**
@@ -33,6 +34,8 @@ public class HttpServer {
 	private File m_folder;  // default folder for accessing static resources (files)
 	private ServerSocket m_ssoc;
 	public Hashtable<String, HttpRicmlet> instance;	
+	public HashMap<Integer, HttpSession> sessions;
+	public int id_S = 0;
 	
 	protected HttpServer(int port, String folderName) {
 		m_port = port;
@@ -46,7 +49,8 @@ public class HttpServer {
 			System.out.println("HttpServer Exception:" + e );
 			System.exit(1);
 		}
-		instance = new Hashtable<String, HttpRicmlet>();	
+		instance = new Hashtable<String, HttpRicmlet>();
+		sessions = new HashMap<>();
 		}
 	
 	public File getFolder() {
@@ -66,6 +70,8 @@ public class HttpServer {
 		}
 		return inst;
 	}
+	
+	
 
 
 
@@ -105,8 +111,20 @@ public class HttpServer {
 			return new HttpResponseImpl(this, req, ps);
 		}
 	}
+	
+	public HttpSession getSession(int id) {
+		return sessions.get(id);
+	}
+	
+	public HttpSession addSession() {
+		Session s = new Session(id_S);
+		sessions.put(id_S, s);
+		return s;
+	}
 
-
+	public void deleteSession(int id){
+		this.sessions.remove(id);
+	}
 	/*
 	 * Server main loop
 	 */
